@@ -1,4 +1,5 @@
 from flask import Flask, request, Response, json, abort
+from werkzeug.exceptions import BadRequest
 
 import methods
 
@@ -9,19 +10,22 @@ def index():
     """
     The only one API endpoint.
     """
-    # curl -H 'Content-Type: application/json' -v 'http://localhost:5000/' -d '[["method1", {"arg1": "arg1data", "arg2": "arg2data"}, "#1"],["method2", {"arg1": "arg1data"}, "#2"],["method3", {}, "#3"]]'
-    #if request.Content
-    if request.mimetype != 'application/json' or request.get_json() is None:
-        abort(400)
+
+    # this throw a BadRequest if json is not sent
+    data = request.get_json()
+
+    # check json format
+    for params in data:
+        if len(params) != 3:
+            raise BadRequest(description="Json format doesn't follow jmap specification. Not enough arguments")
+
+        if type(params[1]) is not dict:
+            raise BadRequest(description="Json format doesn't follow jmap specification. Arguments must be an Object.")
 
     responses = []
-    for params in request.get_json():
-        app.logger.debug(params)
-        method = params[0]
-        arguments = params[1]
-        methodId = params[2]
+    for params in data:
+        [method, arguments, methodId] = params
         for res in dispatch(method, arguments):
-            app.logger.debug(res)
             res.append(methodId)
             responses.append(res)
 
