@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, json
+from flask import Flask, request, Response, json
 from error import Error
 
 import methods
@@ -11,22 +11,19 @@ def index():
     The only one API endpoint.
     """
     # curl -H 'Content-Type: application/json' -v 'http://localhost:5000/' -d '[["method1", {"arg1": "arg1data", "arg2": "arg2data"}, "#1"],["method2", {"arg1": "arg1data"}, "#2"],["method3", {}, "#3"]]'
-    # TODO user [] when jsonify will be able to dump json array
-    responses = {}
-    i = 0
+    responses = []
     for params in request.get_json():
         app.logger.debug(params)
         method = params[0]
         arguments = params[1]
         methodId = params[2]
-        for response in dispatch(method, arguments):
-            app.logger.debug(response)
-            response.append(methodId)
-            responses[i] = response
-            i += 1
+        for res in dispatch(method, arguments):
+            app.logger.debug(res)
+            res.append(methodId)
+            responses.append(res)
 
     app.logger.debug(json.dumps(responses))
-    return jsonify(responses)
+    return Response(response=json.dumps(responses), mimetype='application/json')
 
 @app.route('/error')
 def error():
