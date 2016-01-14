@@ -38,9 +38,9 @@ def dispatch(method, args):
     try:
         for response in methods.__dict__[method](args):
             yield response
+    except KeyError as e:
+        yield ['error', {"type": "unknownMethod"}]
     except Exception as e:
-        if e == method:
-            e = unknownMethod
         app.logger.warning([method, e])
         yield ['error', {"type": "unknownMethod"}]
 
