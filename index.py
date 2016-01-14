@@ -1,5 +1,4 @@
 from flask import Flask, request, Response, json
-from error import Error
 
 import methods
 
@@ -24,10 +23,6 @@ def index():
 
     app.logger.debug(json.dumps(responses))
     return Response(response=json.dumps(responses), mimetype='application/json')
-
-@app.route('/error')
-def error():
-    raise Error('An error occured', status_code=503)
 
 @app.teardown_request
 def teardown_request(exception):
