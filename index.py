@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, json
+from flask import Flask, request, Response, json, abort
 
 import methods
 
@@ -10,6 +10,10 @@ def index():
     The only one API endpoint.
     """
     # curl -H 'Content-Type: application/json' -v 'http://localhost:5000/' -d '[["method1", {"arg1": "arg1data", "arg2": "arg2data"}, "#1"],["method2", {"arg1": "arg1data"}, "#2"],["method3", {}, "#3"]]'
+    #if request.Content
+    if request.mimetype != 'application/json' or request.get_json() is None:
+        abort(400)
+
     responses = []
     for params in request.get_json():
         app.logger.debug(params)
