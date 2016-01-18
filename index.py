@@ -32,7 +32,16 @@ def index():
             responses.append(res)
 
     app.logger.debug(json.dumps(responses))
-    return Response(response=json.dumps(responses), mimetype='application/json')
+    return make_response(responses)
+
+@app.route('/endpoints', methods=['GET'])
+def endpoints():
+    # this throw a BadRequest if json is not sent
+    data = request.get_json()
+
+    require_authorization()
+
+    return make_response(get_endpoints())
 
 def require_authorization():
     """
@@ -47,6 +56,17 @@ def require_authorization():
     if request.headers['Authorization'] != "42":
         app.logger.debug(request.headers['Authorization'])
         abort(401)
+
+def get_endpoints():
+    return {
+        'api' : '/',
+        'eventSource' : None,
+        'upload' : None,
+        'download' : None,
+    }
+
+def make_response(data):
+    return Response(response=json.dumps(data), mimetype='application/json')
 
 @app.teardown_request
 def teardown_request(exception):
