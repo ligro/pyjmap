@@ -14,6 +14,8 @@ def index():
     # this throw a BadRequest if json is not sent
     data = request.get_json()
 
+    require_authorization()
+
     # check json format
     for params in data:
         if len(params) != 3:
@@ -31,6 +33,20 @@ def index():
 
     app.logger.debug(json.dumps(responses))
     return Response(response=json.dumps(responses), mimetype='application/json')
+
+def require_authorization():
+    """
+    Check the Authorization header contains a valid Access Token.
+    """
+    if 'Authorization' not in request.headers:
+        app.logger.debug(request.headers)
+        abort(401)
+
+    # check the access token is still valid
+    # TODO retrieve the good header
+    if request.headers['Authorization'] != "42":
+        app.logger.debug(request.headers['Authorization'])
+        abort(401)
 
 @app.teardown_request
 def teardown_request(exception):
