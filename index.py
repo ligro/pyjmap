@@ -43,6 +43,58 @@ def endpoints():
 
     return make_response(get_endpoints())
 
+@app.route('/access-token', methods=['POST'])
+def access_token():
+    """
+    Generate an access token. Also do the password check.
+    Do not handle rate limit.
+    """
+    # this throw a BadRequest if json is not sent
+    data = request.get_json()
+
+    if 'method' in data:
+        if data['method'] != 'password':
+            return make_response(get_continuation_token(), status=401)
+
+        # TODO check continuationToken
+        # abort(403)
+
+        if data['password'] != '42':
+            return make_response(get_continuation_token(), status=401)
+
+        response = get_endpoints()
+        # TODO create a real access token
+        response['accessToken'] = '42';
+
+        return make_response(response, status=201)
+
+    # TODO store them (now just used to raise BadRequest)
+    data['username']
+    data['clientName']
+    data['clientVersion']
+    data['deviceName']
+
+    return make_response(get_continuation_token())
+
+def get_continuation_token():
+    return {
+        'continuationToken': '24',
+        'methods': ['password'],
+        'prompt': None
+    }
+
+
+@app.route('/access-token', methods=['DELETE'])
+def revoke_token():
+    """
+    Revoke the current access token.
+    """
+    require_authorization()
+
+    # TODO revoke the access token for real
+
+    return Response(status=204)
+
 def require_authorization():
     """
     Check the Authorization header contains a valid Access Token.
@@ -65,8 +117,8 @@ def get_endpoints():
         'download' : None,
     }
 
-def make_response(data):
-    return Response(response=json.dumps(data), mimetype='application/json')
+def make_response(data, status=200):
+    return Response(response=json.dumps(data), status=status, mimetype='application/json')
 
 @app.teardown_request
 def teardown_request(exception):
