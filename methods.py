@@ -29,3 +29,12 @@ def method2(args):
     yield ["responseFromMethod2", {"isBlah": True}]
     yield ["anotherResponseFromMethod2", {"data": 10, "yetmoredata": "Hello"}]
 
+def getAccounts(sinceState=None):
+    if sinceState is not None and type(sinceState) is not str:
+        raise InvalidArguments
+
+    accounts = []
+    state = ''
+
+    yield ["accounts", {"state": state, "list": accounts}]
+
