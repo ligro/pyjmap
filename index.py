@@ -127,13 +127,15 @@ def teardown_request(exception):
 
 def dispatch(method, args):
     try:
-        for response in methods.__dict__[method](args):
+        for response in methods.__dict__[method](**args):
             yield response
     except KeyError as e:
         yield ['error', {"type": "unknownMethod"}]
+    except methods.MethodException as e:
+        yield ['error', {"type": str(e)}]
     except Exception as e:
-        app.logger.warning([method, e])
-        yield ['error', {"type": "unknownMethod"}]
+        app.logger.error([method, e])
+        yield ['error', {"type": "technicalIssue"}]
 
 if __name__ == '__main__':
     app.run(debug=True)
