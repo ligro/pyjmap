@@ -2,6 +2,7 @@ from flask import Flask, request, Response, json, abort
 from werkzeug.exceptions import BadRequest
 
 import methods
+import auth
 
 app = Flask(__name__)
 
@@ -14,7 +15,7 @@ def index():
     # this throw a BadRequest if json is not sent
     data = request.get_json()
 
-    require_authorization()
+    auth.require_authorization()
 
     # check json format
     for params in data:
@@ -39,7 +40,7 @@ def endpoints():
     # this throw a BadRequest if json is not sent
     data = request.get_json()
 
-    require_authorization()
+    auth.require_authorization()
 
     return make_response(get_endpoints())
 
@@ -89,25 +90,11 @@ def revoke_token():
     """
     Revoke the current access token.
     """
-    require_authorization()
+    auth.require_authorization()
 
     # TODO revoke the access token for real
 
     return Response(status=204)
-
-def require_authorization():
-    """
-    Check the Authorization header contains a valid Access Token.
-    """
-    if 'Authorization' not in request.headers:
-        app.logger.debug(request.headers)
-        abort(401)
-
-    # check the access token is still valid
-    # TODO retrieve the good header
-    if request.headers['Authorization'] != "42":
-        app.logger.debug(request.headers['Authorization'])
-        abort(401)
 
 def get_endpoints():
     return {
