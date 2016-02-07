@@ -147,8 +147,9 @@ def dispatch(method, args):
         yield ['error', {"type": "unknownMethod"}]
     except methods.MethodException as e:
         yield ['error', {"type": str(e)}]
-    except Exception as e:
-        app.logger.error([method, e])
+    except Exception:
+        app.logger.error(method)
+        app.logger.error(traceback.format_exc())
         yield ['error', {"type": "technicalIssue"}]
 
 if __name__ == '__main__':
