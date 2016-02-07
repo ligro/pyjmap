@@ -18,19 +18,6 @@ class InvalidArguments(MethodException):
 # This will contains all methods available in the apis
 # always use yield, never return
 
-def method1(args):
-    """
-    example
-    """
-    yield ["responseFromMethod1", {"arg1": 3, "arg2": "foo"}]
-
-def method2(args):
-    """
-    example
-    """
-    yield ["responseFromMethod2", {"isBlah": True}]
-    yield ["anotherResponseFromMethod2", {"data": 10, "yetmoredata": "Hello"}]
-
 def getAccounts(sinceState=None):
     if sinceState is not None and type(sinceState) is not str:
         raise InvalidArguments
