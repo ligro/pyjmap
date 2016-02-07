@@ -99,4 +99,15 @@ class Device(db.Model, Model):
     def getByAccessToken(accessToken):
         return Device.query.filter_by(accessToken=accessToken).one()
 
+class Account(db.Model, Model):
+    id = db.Column(db.Integer, primary_key=True)
+    userId = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User')
+    name = db.Column(db.String(80))
+    # TODO bool it
+    isPrimary = db.Column(db.Integer)
+    # TODO to finish
+
+    def getAccountsByUserId(userId):
+        return Account.query.filter_by(userId=userId).all()
 
