@@ -1,10 +1,19 @@
-from flask import Flask, request, Response, json, abort
-from werkzeug.exceptions import BadRequest
+import traceback
 
+from werkzeug.exceptions import BadRequest
+from itsdangerous import URLSafeTimedSerializer
+from flask import Flask, request, Response, json, abort
+
+from database import Device, User
+import database
 import methods
 import auth
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ligro@localhost/pyjmap'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ECHO'] = True
+database.db.init_app(app)
 
 @app.route('/', methods=['POST'])
 def index():
@@ -55,35 +64,46 @@ def access_token():
 
     if 'method' in data:
         if data['method'] != 'password':
-            return make_response(get_continuation_token(), status=401)
+            return make_response(get_continuation_token_response(data), status=401)
 
-        # TODO check continuationToken
-        # abort(403)
+        try:
+            tokenData = _getURLSafeSerializer().loads(data['token'])
+        except BadSignature:
+            abort(403)
 
-        if data['password'] != '42':
-            return make_response(get_continuation_token(), status=401)
+        try:
+            user = User.query.filter_by(username=tokenData['username']).one()
+            user.checkPwd(data['password'])
+        except database.NoResultFound:
+            return make_response(get_continuation_token_response(tokenData), status=401)
+        except User.BadPassword:
+            return make_response(get_continuation_token_response(tokenData), status=401)
+
+        auth.setUser(user)
+
+        device = Device()
+        device.setFromArray(tokenData)
+        device.userId = user.id
+        device.accessToken = auth.createAccessToken()
+        device.save()
+        database.commit()
 
         response = get_endpoints()
-        # TODO create a real access token
-        response['accessToken'] = '42';
+        response['accessToken'] = device.accessToken;
 
         return make_response(response, status=201)
 
-    # TODO store them (now just used to raise BadRequest)
-    data['username']
-    data['clientName']
-    data['clientVersion']
-    data['deviceName']
+    return make_response(get_continuation_token_response(data))
 
-    return make_response(get_continuation_token())
-
-def get_continuation_token():
+def get_continuation_token_response(data):
     return {
-        'continuationToken': '24',
+        'continuationToken': _getURLSafeSerializer().dumps(data),
         'methods': ['password'],
         'prompt': None
     }
 
+def _getURLSafeSerializer():
+    return URLSafeTimedSerializer('secret-key')
 
 @app.route('/access-token', methods=['DELETE'])
 def revoke_token():
@@ -92,7 +112,14 @@ def revoke_token():
     """
     auth.require_authorization()
 
-    # TODO revoke the access token for real
+
+    try:
+        device = Device.getByAccessToken(auth.getAccessToken())
+    except database.NoResultFound:
+        abort(401)
+
+    device.delete()
+    database.commit()
 
     return Response(status=204)
 
