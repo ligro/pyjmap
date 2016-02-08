@@ -1,7 +1,7 @@
 import traceback
 
 from werkzeug.exceptions import BadRequest
-from itsdangerous import URLSafeTimedSerializer
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask import Flask, request, Response, json, abort
 
 from database import Device, User
@@ -67,7 +67,11 @@ def access_token():
             return make_response(get_continuation_token_response(data), status=401)
 
         try:
-            tokenData = _getURLSafeSerializer().loads(data['token'])
+            # max age 5 minutes
+            # FIXME should be moved to the config file
+            tokenData = auth.getURLSafeSerializer().loads(data['token'], max_age=300)
+        except SignatureExpired:
+            return make_response(get_continuation_token_response(tokenData), status=401)
         except BadSignature:
             abort(403)
 
@@ -79,17 +83,17 @@ def access_token():
         except User.BadPassword:
             return make_response(get_continuation_token_response(tokenData), status=401)
 
-        auth.setUser(user)
-
+        # getOrCreate
         device = Device()
         device.setFromArray(tokenData)
         device.userId = user.id
-        device.accessToken = auth.createAccessToken()
         device.save()
         database.commit()
 
+        auth.setUserAndDevice(user, device)
+
         response = get_endpoints()
-        response['accessToken'] = device.accessToken;
+        response['accessToken'] = auth.createAccessToken();
 
         return make_response(response, status=201)
 
@@ -97,13 +101,10 @@ def access_token():
 
 def get_continuation_token_response(data):
     return {
-        'continuationToken': _getURLSafeSerializer().dumps(data),
+        'continuationToken': auth.getURLSafeSerializer().dumps(data),
         'methods': ['password'],
         'prompt': None
     }
-
-def _getURLSafeSerializer():
-    return URLSafeTimedSerializer('secret-key')
 
 @app.route('/access-token', methods=['DELETE'])
 def revoke_token():
@@ -112,13 +113,7 @@ def revoke_token():
     """
     auth.require_authorization()
 
-
-    try:
-        device = Device.getByAccessToken(auth.getAccessToken())
-    except database.NoResultFound:
-        abort(401)
-
-    device.delete()
+    auth.current_device.delete()
     database.commit()
 
     return Response(status=204)

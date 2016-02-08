@@ -25,6 +25,9 @@ class Model():
     def save(self):
         db.session.add(self)
 
+    def delete(self):
+        db.session.delete(self)
+
     def toDict(self, found=None):
         if found is None:
             found = []
@@ -95,9 +98,6 @@ class Device(db.Model, Model):
     clientName = db.Column(db.String(80))
     clientVersion = db.Column(db.String(80))
     accessToken = db.Column(db.String(80))
-
-    def getByAccessToken(accessToken):
-        return Device.query.filter_by(accessToken=accessToken).one()
 
 class Account(db.Model, Model):
     id = db.Column(db.Integer, primary_key=True)
