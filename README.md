@@ -1,25 +1,29 @@
 # pyjmap
 
+## Install
+
+```bash
+git clone https://github.com/ligro/pyjmap
+cd pyjmap
+virtualenv3 venv
+. venv/bin/activate
+pip install -r requirements.txt
+```
+
 ## init db
 
-need to be improved
-```python
-python
-import pyjmap
-pyjmap.app.app_context().push()
-pyjmap.db.create_all()
+```bash
+pyjmap db create
 ```
 
 ## add first user
 
-```python
-python
-import pyjmap
-pyjmap.app.app_context().push()
-import database
-user = database.User()
-user.username = 'my_username'
-user.setPassword('my_password')
-user.save()
-database.commit()
+```bash
+pyjmap user add <name>
+```
+
+## run
+
+```bash
+pyjmap run
 ```

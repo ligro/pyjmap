@@ -6,6 +6,9 @@ setup(
     description='jmap.io implementation server',
     url='https://github.com/ligro/pyjmap',
     packages=['pyjmap'],
+    entry_points={
+        'console_scripts': ['pyjmap=pyjmap.__main__:cli'],
+    },
     install_requires=[
         'Flask==0.10.1',
         'Flask-SQLAlchemy==2.1',
@@ -16,5 +19,6 @@ setup(
         'SQLAlchemy==1.0.11',
         'Werkzeug==0.11.3',
         'wheel==0.24.0',
+        'click==6.2',
     ],
 )
