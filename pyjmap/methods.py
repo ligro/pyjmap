@@ -1,6 +1,6 @@
 from flask import current_app
-from database import db, Account
-import auth
+from pyjmap.database import db, Account
+from pyjmap import auth
 
 class MethodException(Exception):
     message = None

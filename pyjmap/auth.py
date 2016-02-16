@@ -2,8 +2,8 @@ import os
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask import current_app, request, abort
 
-from database import User, Device
-import database
+from pyjmap.database import User, Device
+from pyjmap import database
 
 current_user = None
 current_device = None

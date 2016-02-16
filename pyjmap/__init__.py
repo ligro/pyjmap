@@ -4,10 +4,8 @@ from werkzeug.exceptions import BadRequest
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask import Flask, request, Response, json, abort
 
-from database import Device, User
-import database
-import methods
-import auth
+from pyjmap.database import Device, User
+from pyjmap import database, methods, auth
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ligro@localhost/pyjmap'
@@ -146,6 +144,3 @@ def dispatch(method, args):
         app.logger.error(method)
         app.logger.error(traceback.format_exc())
         yield ['error', {"type": "technicalIssue"}]
-
-if __name__ == '__main__':
-    app.run(debug=True)
