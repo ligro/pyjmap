@@ -16,7 +16,6 @@ def require_authorization():
     global current_user, current_device
 
     if 'Authorization' not in request.headers:
-        current_app.logger.debug(request.headers)
         abort(401)
 
     # check the access token is still valid
