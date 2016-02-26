@@ -60,7 +60,14 @@ def access_token():
     # this throw a BadRequest if json is not sent
     data = request.get_json()
 
-    if data is not None and 'method' in data:
+    if data is None:
+        abort(400)
+
+    for param in ['username', 'clientVersion', 'clientName', 'devicename']:
+        if param not in data or data[param] == '':
+            abort(400)
+
+    if 'method' in data:
         if data['method'] != 'password':
             return make_response(get_continuation_token_response(data), status=401)
 
