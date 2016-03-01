@@ -66,10 +66,16 @@ class TestAccessToken:
 
         data = json.loads(response.data)
         assert 'accessToken' in data
+        accessToken = data['accessToken']
 
-        response = self.client.get('/endpoints', headers={'Authorization': data['accessToken']})
+        response = self.client.get('/endpoints', headers={'Authorization': accessToken})
         assert response.status_code == 200
 
+        response = self.client.delete('/access-token', headers={'Authorization': accessToken})
+        assert response.status_code == 204
+
+        response = self.client.get('/endpoints', headers={'Authorization': accessToken})
+        assert response.status_code == 401
 
     def test_empty_parameter(self):
         """Check bad parameters returns bad response."""
