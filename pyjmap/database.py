@@ -10,7 +10,7 @@ NoResultFound = sqlalchemy.orm.exc.NoResultFound
 def commit():
     try:
         db.session.commit()
-    except DatabaseError as e:
+    except sqlalchemy.exc.DatabaseError as e:
         db.session.rollback()
         current_app.logger.warning(e)
 
@@ -77,10 +77,10 @@ class User(db.Model, Model):
         try:
             algo, salt, hsh = self.password.split('$')
         except:
-            raise BadPassword
+            raise self.BadPassword
 
         if hsh != self._enc(algo, salt, raw_pwd):
-            raise BadPassword
+            raise self.BadPassword
 
     def _enc(self, algo, salt, pwd):
         import hashlib
