@@ -119,15 +119,45 @@ class TestAccessToken:
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
         assert response.status_code == 403
 
-    def test_bad_user_not_found(self):
-        """Response when user is not found."""
-        data = Provider.deviceData('usernotfound')
-        response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
-        assert response.status_code == 200
+    def test_expired_continuation_token(self):
+        """
+        Response when token is expired.
+        """
+        #TODO find a way to do this test.
+        pass
 
     def test_bad_password(self):
         """Response when password is not the good one."""
-        pass
+        password = func_name() + 'password'
+        user = Provider.user(func_name() + 'user', password)
+
+        data = Provider.deviceData(user.username)
+        response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        data = {
+            'method' : 'password',
+            'token' : data['continuationToken'],
+            'password' : password + 'plop'
+        }
+        response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
+        assert response.status_code == 401
+
+    def test_user_not_found(self):
+        """Response when user doesn't exists."""
+        data = Provider.deviceData('usernotfound')
+        response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        data = {
+            'method' : 'password',
+            'token' : data['continuationToken'],
+            'password' : 'password'
+        }
+        response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
+        assert response.status_code == 401
 
     def _assert_access_token_step1_response(self, data):
         """Assert access token response, with continuation token."""
