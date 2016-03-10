@@ -23,6 +23,9 @@ def test_endpoint_not_loggued(client):
     response = client.get('/endpoints')
     assert response.status_code == 401
 
+    response = client.post('/')
+    assert response.status_code == 401
+
 class Provider:
 
     def user(username, password):
@@ -77,10 +80,16 @@ class TestAccessToken:
         response = self.client.get('/endpoints', headers={'Authorization': accessToken})
         assert response.status_code == 200
 
+        response = self.client.post('/', headers={'Authorization': accessToken}, data='[]', content_type='application/json')
+        assert response.status_code == 200
+
         response = self.client.delete('/access-token', headers={'Authorization': accessToken})
         assert response.status_code == 204
 
         response = self.client.get('/endpoints', headers={'Authorization': accessToken})
+        assert response.status_code == 401
+
+        response = self.client.post('/', headers={'Authorization': accessToken}, data='[]')
         assert response.status_code == 401
 
     def test_expired_continuation_token(self):

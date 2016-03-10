@@ -24,6 +24,9 @@ def index():
 
     auth.require_authorization()
 
+    if not isinstance(data, list):
+        raise BadRequest(description="Json format doesn't follow jmap specification. Argument must be a list.")
+
     # check json format
     for params in data:
         if len(params) != 3:
