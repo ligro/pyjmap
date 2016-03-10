@@ -8,18 +8,6 @@ def func_name():
     import traceback
     return traceback.extract_stack(None, 2)[0][2]
 
-def setup_module(self):
-    pyjmap.app.app_context().push()
-    pyjmap.database.db.drop_all()
-    pyjmap.database.db.create_all()
-
-@pytest.fixture
-def app():
-    pyjmap.app.testing = True
-    pyjmap.app.debug = True
-
-    return pyjmap.app
-
 def test_endpoint_not_loggued(client):
     response = client.get('/endpoints')
     assert response.status_code == 401
