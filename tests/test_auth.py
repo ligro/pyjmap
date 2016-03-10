@@ -2,6 +2,7 @@ import pytest
 from flask import json
 
 import pyjmap
+import provider
 
 def func_name():
     import traceback
@@ -26,23 +27,6 @@ def test_endpoint_not_loggued(client):
     response = client.post('/')
     assert response.status_code == 401
 
-class Provider:
-
-    def user(username, password):
-        user = pyjmap.database.User()
-        user.username = username
-        user.setPassword(password)
-        user.save()
-        pyjmap.database.commit()
-        return user
-
-    def deviceData(username):
-        return {
-            'username' : username,
-            'clientVersion' : '2.8.7',
-            'clientName' : 'py.test',
-            'devicename' : 'terminal'
-        }
 
 @pytest.mark.usefixtures('client_class')
 class TestAccessToken:
@@ -57,9 +41,9 @@ class TestAccessToken:
         """Access token retrieving workflow, without error."""
 
         password = func_name() + 'password'
-        user = Provider.user(func_name() + 'user', password)
+        user = provider.user(func_name() + 'user', password)
 
-        data = Provider.deviceData(user.username)
+        data = provider.deviceData(user.username)
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -95,9 +79,9 @@ class TestAccessToken:
     def test_expired_continuation_token(self):
         """Response when continuation token is expired."""
         password = func_name() + 'password'
-        user = Provider.user(func_name() + 'user', password)
+        user = provider.user(func_name() + 'user', password)
 
-        data = Provider.deviceData(user.username)
+        data = provider.deviceData(user.username)
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -113,9 +97,9 @@ class TestAccessToken:
     def test_bad_continuation_token(self):
         """Response when token is bad."""
         password = func_name() + 'password'
-        user = Provider.user(func_name() + 'user', password)
+        user = provider.user(func_name() + 'user', password)
 
-        data = Provider.deviceData(user.username)
+        data = provider.deviceData(user.username)
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -138,9 +122,9 @@ class TestAccessToken:
     def test_bad_password(self):
         """Response when password is not the good one."""
         password = func_name() + 'password'
-        user = Provider.user(func_name() + 'user', password)
+        user = provider.user(func_name() + 'user', password)
 
-        data = Provider.deviceData(user.username)
+        data = provider.deviceData(user.username)
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -155,7 +139,7 @@ class TestAccessToken:
 
     def test_user_not_found(self):
         """Response when user doesn't exists."""
-        data = Provider.deviceData('usernotfound')
+        data = provider.deviceData('usernotfound')
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
         assert response.status_code == 200
         data = json.loads(response.data)
