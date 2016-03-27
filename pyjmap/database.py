@@ -110,16 +110,18 @@ class Device(db.Model, Model):
         )
 
         try:
-            device = query.one()
+            return query.one()
         except NoResultFound:
-            device = Device()
-            data['name'] = data['deviceName']
-            del data['deviceName']
-            device.setFromArray(data)
-            device.userId = userId
-            device.save()
+            return Device._createFromTokenData(userId, data)
 
+    def _createFromTokenData(userId, data):
+        device = Device()
+        data['name'] = data['deviceName']
+        del data['deviceName']
+        device.setFromArray(data)
+        device.userId = userId
         return device
+
 
 class Account(db.Model, Model):
     id = db.Column(db.Integer, primary_key=True)

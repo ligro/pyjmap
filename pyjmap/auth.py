@@ -53,9 +53,12 @@ def setUserAndDevice(user, device):
 
 def createAccessToken():
     global current_user, current_device
+    return _createAccessToken(current_user, current_device)
+
+def _createAccessToken(user, device):
     data = {
-        'userId': current_user.id,
-        'deviceId': current_device.id,
+        'userId': user.id,
+        'deviceId': device.id,
         'salt': str(os.urandom(12)),
     }
     return getURLSafeSerializer().dumps(data)
