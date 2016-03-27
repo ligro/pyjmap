@@ -4,10 +4,6 @@ from flask import json
 import pyjmap
 import provider
 
-def func_name():
-    import traceback
-    return traceback.extract_stack(None, 2)[0][2]
-
 def test_endpoint_not_loggued(client):
     response = client.get('/endpoints')
     assert response.status_code == 401
@@ -28,8 +24,8 @@ class TestAccessToken:
     def test_retrieve(self):
         """Access token retrieving workflow, without error."""
 
-        password = func_name() + 'password'
-        user = provider.user(func_name() + 'user', password)
+        password = provider.func_name() + 'password'
+        user = provider.user(password)
 
         data = provider.deviceData(user.username)
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
@@ -73,8 +69,8 @@ class TestAccessToken:
 
     def test_expired_continuation_token(self):
         """Response when continuation token is expired."""
-        password = func_name() + 'password'
-        user = provider.user(func_name() + 'user', password)
+        password = provider.func_name() + 'password'
+        user = provider.user(password)
 
         data = provider.deviceData(user.username)
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
@@ -91,8 +87,8 @@ class TestAccessToken:
 
     def test_bad_continuation_token(self):
         """Response when token is bad."""
-        password = func_name() + 'password'
-        user = provider.user(func_name() + 'user', password)
+        password = provider.func_name() + 'password'
+        user = provider.user(password)
 
         data = provider.deviceData(user.username)
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
@@ -116,8 +112,8 @@ class TestAccessToken:
 
     def test_bad_password(self):
         """Response when password is not the good one."""
-        password = func_name() + 'password'
-        user = provider.user(func_name() + 'user', password)
+        password = provider.func_name() + 'password'
+        user = provider.user(password)
 
         data = provider.deviceData(user.username)
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
