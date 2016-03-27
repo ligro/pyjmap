@@ -13,6 +13,6 @@ def deviceData(username):
         'username' : username,
         'clientVersion' : '2.8.7',
         'clientName' : 'py.test',
-        'devicename' : 'terminal'
+        'deviceName' : 'terminal'
     }
 

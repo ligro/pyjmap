@@ -67,7 +67,7 @@ def access_token():
         abort(400)
 
     if 'method' not in data:
-        for param in ['username', 'clientVersion', 'clientName', 'devicename']:
+        for param in ['username', 'clientVersion', 'clientName', 'deviceName']:
             if param not in data or data[param] == '':
                 abort(400)
 
@@ -94,6 +94,8 @@ def access_token():
 
         # getOrCreate
         device = Device()
+        tokenData['name'] = tokenData['deviceName']
+        del tokenData['deviceName']
         device.setFromArray(tokenData)
         device.userId = user.id
         device.save()
