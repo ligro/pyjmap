@@ -45,9 +45,16 @@ class TestAccessToken:
         response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
         assert response.status_code == 201
 
-        data = json.loads(response.data)
-        assert 'accessToken' in data
-        accessToken = data['accessToken']
+        responseData = json.loads(response.data)
+        assert 'accessToken' in responseData
+        accessToken = responseData['accessToken']
+        # does it creates a device
+        assert pyjmap.database.Device.query.filter_by(userId=user.id).count() == 1
+
+        # check it doesn't create a new device at each connection
+        response = self.client.post('/access-token', data=json.dumps(data), content_type='application/json')
+        assert response.status_code == 201
+        assert pyjmap.database.Device.query.filter_by(userId=user.id).count() == 1
 
         response = self.client.get('/endpoints', headers={'Authorization': accessToken})
         assert response.status_code == 200

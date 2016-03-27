@@ -97,7 +97,29 @@ class Device(db.Model, Model):
     name = db.Column(db.String(80))
     clientName = db.Column(db.String(80))
     clientVersion = db.Column(db.String(80))
-    accessToken = db.Column(db.String(80))
+
+    def findOrCreate(userId, data):
+        # TODO find a way to dynamicly retrieve class name to remove this
+        # @Device@
+        current_app.logger.debug(data)
+        query = Device.query.filter_by(
+            userId=userId,
+            name=data['deviceName'],
+            clientName=data['clientName'],
+            clientVersion=data['clientVersion']
+        )
+
+        try:
+            device = query.one()
+        except NoResultFound:
+            device = Device()
+            data['name'] = data['deviceName']
+            del data['deviceName']
+            device.setFromArray(data)
+            device.userId = userId
+            device.save()
+
+        return device
 
 class Account(db.Model, Model):
     id = db.Column(db.Integer, primary_key=True)

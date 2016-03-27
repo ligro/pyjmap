@@ -93,11 +93,7 @@ def access_token():
             return make_response(get_continuation_token_response(tokenData), status=401)
 
         # getOrCreate
-        device = Device()
-        tokenData['name'] = tokenData['deviceName']
-        del tokenData['deviceName']
-        device.setFromArray(tokenData)
-        device.userId = user.id
+        device = Device.findOrCreate(user.id, tokenData)
         device.save()
         database.commit()
 
