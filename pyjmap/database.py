@@ -1,7 +1,7 @@
 from flask import Flask, current_app
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects import postgresql
-import sqlalchemy
+import sqlalchemy, datetime
 
 db = SQLAlchemy()
 
@@ -28,10 +28,13 @@ class Model():
     def delete(self):
         db.session.delete(self)
 
+    def getById(id):
+        return query.filter_by(id=id).all()
+
     def toDict(self, found=None):
         if found is None:
             found = []
-        mapper = class_mapper(self.__class__)
+        mapper = sqlalchemy.orm.class_mapper(self.__class__)
         columns = [column.key for column in mapper.columns]
         get_key_value = lambda c: (c, getattr(self, c).isoformat()) if isinstance(getattr(self, c), datetime.datetime) else (c, getattr(self, c))
         out = dict(list(map(get_key_value, columns)))
@@ -48,7 +51,6 @@ class Model():
 
 
 class User(db.Model, Model):
-    # TODO auto increment
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
     password = db.Column(db.String(80))
@@ -101,7 +103,6 @@ class Device(db.Model, Model):
     def findOrCreate(userId, data):
         # TODO find a way to dynamicly retrieve class name to remove this
         # @Device@
-        current_app.logger.debug(data)
         query = Device.query.filter_by(
             userId=userId,
             name=data['deviceName'],
@@ -126,11 +127,7 @@ class Device(db.Model, Model):
 class Account(db.Model, Model):
     id = db.Column(db.Integer, primary_key=True)
     userId = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship('User')
-    name = db.Column(db.String(80))
-    # TODO bool it
-    isPrimary = db.Column(db.Integer)
-    # TODO to finish
+    data = db.Column(postgresql.JSON())
 
     def getAccountsByUserId(userId):
         return Account.query.filter_by(userId=userId).all()

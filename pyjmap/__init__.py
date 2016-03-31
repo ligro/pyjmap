@@ -42,7 +42,6 @@ def index():
             res.append(methodId)
             responses.append(res)
 
-    app.logger.debug(json.dumps(responses))
     return make_response(responses)
 
 @app.route('/endpoints', methods=['GET'])
